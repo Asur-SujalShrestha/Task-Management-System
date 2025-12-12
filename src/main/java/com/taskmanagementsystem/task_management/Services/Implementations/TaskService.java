@@ -6,6 +6,7 @@ import com.taskmanagementsystem.task_management.Models.Tasks;
 import com.taskmanagementsystem.task_management.Repositories.TaskRepository;
 import com.taskmanagementsystem.task_management.Services.ITaskService;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ public class TaskService implements ITaskService {
 
     public void checkStatus(String status) throws BadRequestException {
         try{
-            Tasks.Status checkingStatus = Tasks.Status.valueOf(status);
+            Tasks.Status checkingStatus = Tasks.Status.valueOf(status.toUpperCase());
         }
         catch(Exception e){
             throw new BadRequestException("Invalid Status");
@@ -37,7 +38,7 @@ public class TaskService implements ITaskService {
         Tasks task = Tasks.builder()
                 .title(addTaskDTO.getTitle())
                 .description(addTaskDTO.getDescription())
-                .status(Enum.valueOf(Tasks.Status.class, addTaskDTO.getStatus()))
+                .status(Enum.valueOf(Tasks.Status.class, addTaskDTO.getStatus().toUpperCase()))
                 .createDate(LocalDate.now())
                 .dueDate(addTaskDTO.getDueDate())
                 .build();
@@ -46,8 +47,8 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public List<Tasks> getAllTasks() {
-        return taskRepository.findAll();
+    public List<Tasks> getAllTasks(Pageable pageable) {
+        return taskRepository.findAll(pageable).getContent();
     }
 
     @Override
@@ -64,7 +65,7 @@ public class TaskService implements ITaskService {
         task.setTitle(updateTaskDTO.getTitle());
         task.setDescription(updateTaskDTO.getDescription());
         task.setDueDate(updateTaskDTO.getDueDate());
-        task.setStatus(Enum.valueOf(Tasks.Status.class, updateTaskDTO.getStatus()));
+        task.setStatus(Enum.valueOf(Tasks.Status.class, updateTaskDTO.getStatus().toUpperCase()));
         return taskRepository.save(task);
     }
 

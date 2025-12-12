@@ -4,13 +4,14 @@ import com.taskmanagementsystem.task_management.DTOs.AddTaskDTO;
 import com.taskmanagementsystem.task_management.DTOs.UpdateTaskDTO;
 import com.taskmanagementsystem.task_management.Models.Tasks;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface ITaskService {
     Tasks addTask(AddTaskDTO addTaskDTO) throws BadRequestException;
 
-    List<Tasks> getAllTasks();
+    List<Tasks> getAllTasks(Pageable pageable);
 
     Tasks getTaskById(long taskId);
 

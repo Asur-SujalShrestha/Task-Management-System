@@ -5,6 +5,7 @@ import com.taskmanagementsystem.task_management.DTOs.UpdateTaskDTO;
 import com.taskmanagementsystem.task_management.Models.Tasks;
 import com.taskmanagementsystem.task_management.Services.Implementations.TaskService;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -34,8 +35,9 @@ public class TaskController {
     }
 
     @GetMapping("/get-all-tasks")
-    public ResponseEntity<List<Tasks>> getAllTasks(){
-        List<Tasks> allTasks = taskService.getAllTasks();
+    public ResponseEntity<List<Tasks>> getAllTasks(@RequestParam(name = "pageNumber", defaultValue = "1", required = false) int pageNumber,
+                                                   @RequestParam(name = "pageSize", defaultValue = "1", required = false) int pageSize){
+        List<Tasks> allTasks = taskService.getAllTasks(PageRequest.of(pageNumber-1, pageSize));
             return ResponseEntity.ok(allTasks);
     }
 
