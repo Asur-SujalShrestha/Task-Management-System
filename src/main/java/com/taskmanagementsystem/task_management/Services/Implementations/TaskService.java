@@ -73,7 +73,7 @@ public class TaskService implements ITaskService {
     public Tasks updateTaskStatus(long taskId, String status) throws BadRequestException {
         Tasks task = taskRepository.findById(taskId).orElseThrow(()-> new RuntimeException("Task id not found"));
         checkStatus(status);
-        task.setStatus(Enum.valueOf(Tasks.Status.class, status));
+        task.setStatus(Enum.valueOf(Tasks.Status.class, status.toUpperCase()));
         return taskRepository.save(task);
     }
 
@@ -102,6 +102,6 @@ public class TaskService implements ITaskService {
     @Override
     public List<Tasks> getTasksByStatus(String status) throws BadRequestException {
         checkStatus(status);
-        return taskRepository.findByStatus(Enum.valueOf(Tasks.Status.class, status));
+        return taskRepository.findByStatus(Enum.valueOf(Tasks.Status.class, status.toUpperCase()));
     }
 }

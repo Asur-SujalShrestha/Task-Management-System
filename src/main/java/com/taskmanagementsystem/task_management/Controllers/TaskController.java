@@ -25,8 +25,14 @@ public class TaskController {
 
     @PostMapping("/add-task")
     public ResponseEntity<Tasks> addNewTask(@RequestBody AddTaskDTO addTaskDTO) throws BadRequestException {
+        if(addTaskDTO.getTitle().isEmpty()){
+            throw new BadRequestException("Invalid task title.");
+        }
+        if(addTaskDTO.getDueDate() == null){
+            throw new BadRequestException("Invalid due date.");
+        }
         if(addTaskDTO.getDueDate().isBefore(LocalDate.now())){
-            throw new BadRequestException("Due date cannot be before current date");
+            throw new BadRequestException("Due date cannot be before current date.");
         }
         Tasks addedTask = taskService.addTask(addTaskDTO);
         URI location = ServletUriComponentsBuilder
