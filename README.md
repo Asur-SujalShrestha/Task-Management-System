@@ -243,6 +243,13 @@ After running project Swagger UI is available in
 
 ## Postman testing collection
 
+### Postman Collection
+- Download the collection:
+  * Open postman
+  * Import and start testing
+ 
+ ## Postman Pictures
+
 ### Add task
 <img width="1076" height="778" alt="image" src="https://github.com/user-attachments/assets/c03523ed-1f87-4944-a7ef-294654a78903" />
 
