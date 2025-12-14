@@ -36,6 +36,10 @@ public class TaskService implements ITaskService {
     @Override
     @Transactional
     public Tasks addTask(AddTaskDTO addTaskDTO) throws BadRequestException {
+        Tasks existingTask = taskRepository.findByTitle(addTaskDTO.getTitle());
+        if(existingTask != null){
+            throw new BadRequestException("Title already exists");
+        }
         checkStatus(addTaskDTO.getStatus());
 
         Tasks task = Tasks.builder()

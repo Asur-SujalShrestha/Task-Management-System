@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Tasks, Long> {
     List<Tasks> findByStatus(Tasks.Status status);
+
+    Tasks findByTitle(String title);
 }

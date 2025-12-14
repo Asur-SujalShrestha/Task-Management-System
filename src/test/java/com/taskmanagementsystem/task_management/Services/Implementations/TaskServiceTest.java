@@ -74,6 +74,28 @@ public class TaskServiceTest {
     }
 
     @Test
+    public void shouldReturnBadRequestWhenTitleIsSame() throws BadRequestException {
+        AddTaskDTO addTaskDTO = AddTaskDTO.builder()
+                .title("Test 1")
+                .description("This is a test")
+                .dueDate(LocalDate.now().plusDays(1))
+                .status("PENDINGs")
+                .build();
+
+        Tasks existingTask = Tasks.builder()
+                .id(1L)
+                .title("Test 1")
+                .description("This is a test duplicate")
+                .dueDate(LocalDate.now().plusDays(2))
+                .status(Tasks.Status.PENDING)
+                .build();
+
+        when(taskRepository.findByTitle(addTaskDTO.getTitle())).thenReturn(existingTask);
+        assertThrows(BadRequestException.class, () -> taskService.addTask(addTaskDTO));
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
     public void shouldGetAllTasksSuccessfully() {
         List<Tasks> dummyTask = List.of(
                 new Tasks(1L, "DummyTest1", "This is the dummy test 1", Tasks.Status.PENDING, LocalDate.now(), LocalDate.now().plusDays(1)),
