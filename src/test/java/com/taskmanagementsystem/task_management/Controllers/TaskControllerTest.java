@@ -1,11 +1,13 @@
 package com.taskmanagementsystem.task_management.Controllers;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taskmanagementsystem.task_management.DTOs.AddTaskDTO;
 import com.taskmanagementsystem.task_management.DTOs.UpdateTaskDTO;
 import com.taskmanagementsystem.task_management.Models.Tasks;
 import com.taskmanagementsystem.task_management.Services.Implementations.TaskService;
+import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +63,63 @@ public class TaskControllerTest {
                 .andExpect(jsonPath("$.title").value(addTaskDTO.getTitle()));
 
         verify(taskService, times(1)).addTask(any(AddTaskDTO.class));
+    }
+
+    @Test
+    public void shouldReturnBadRequestExceptionWhenTitleIsNull() throws Exception {
+        AddTaskDTO addTaskDTO = AddTaskDTO.builder()
+                .title("")
+                .description("This is the Controller Test 1")
+                .dueDate(LocalDate.now().plusDays(1))
+                .status("PENDING")
+                .build();
+
+        when(taskService.addTask(any(AddTaskDTO.class))).thenThrow(new BadRequestException());
+
+        mockMvc.perform(post("/api/tasks/add-task")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(addTaskDTO)))
+                .andExpect(status().isBadRequest());
+
+        verify(taskService, never()).addTask(any(AddTaskDTO.class));
+    }
+
+    @Test
+    public void shouldReturnBadRequestExceptionWhenDueDateIsNull() throws Exception {
+        AddTaskDTO addTaskDTO = AddTaskDTO.builder()
+                .title("Test 1")
+                .description("This is the Controller Test 1")
+                .dueDate(null)
+                .status("PENDING")
+                .build();
+
+        when(taskService.addTask(any(AddTaskDTO.class))).thenThrow(new BadRequestException());
+
+        mockMvc.perform(post("/api/tasks/add-task")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(addTaskDTO)))
+                .andExpect(status().isBadRequest());
+
+        verify(taskService, never()).addTask(any(AddTaskDTO.class));
+    }
+
+    @Test
+    public void shouldReturnBadRequestExceptionWhenDueDateIsBeforeToday() throws Exception {
+        AddTaskDTO addTaskDTO = AddTaskDTO.builder()
+                .title("Test 1")
+                .description("This is the Controller Test 1")
+                .dueDate(LocalDate.now().minusDays(1))
+                .status("PENDING")
+                .build();
+
+        when(taskService.addTask(any(AddTaskDTO.class))).thenThrow(new BadRequestException());
+
+        mockMvc.perform(post("/api/tasks/add-task")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(addTaskDTO)))
+                .andExpect(status().isBadRequest());
+
+        verify(taskService, never()).addTask(any(AddTaskDTO.class));
     }
 
     @Test
@@ -151,6 +210,26 @@ public class TaskControllerTest {
                 .andExpect(jsonPath("$.dueDate").value(updateTaskDTO.getDueDate().toString()))
                 .andExpect(jsonPath("$.status").value(updateTaskDTO.getStatus()));
         verify(taskService, times(1)).updateTask(eq(taskId), any(UpdateTaskDTO.class));
+    }
+
+    @Test
+    public void shouldReturnBadRequestExceptionWhenTitleIsNullWhileUpdatingTask() throws Exception {
+        long taskId = 1L;
+        UpdateTaskDTO updateTaskDTO = UpdateTaskDTO.builder()
+                .title("")
+                .description("This is the updated task description")
+                .dueDate(LocalDate.now().plusDays(2))
+                .status("IN_PROGRESS")
+                .build();
+
+        when(taskService.updateTask(eq(taskId), any(UpdateTaskDTO.class))).thenThrow(new BadRequestException());
+
+        mockMvc.perform(put("/api/tasks/update-task/{taskId}", taskId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateTaskDTO))
+                ).andExpect(status().isBadRequest());
+
+        verify(taskService, never()).updateTask(eq(taskId), any(UpdateTaskDTO.class));
     }
 
     @Test

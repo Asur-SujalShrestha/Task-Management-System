@@ -2,6 +2,7 @@ package com.taskmanagementsystem.task_management.Services.Implementations;
 
 import com.taskmanagementsystem.task_management.DTOs.AddTaskDTO;
 import com.taskmanagementsystem.task_management.DTOs.UpdateTaskDTO;
+import com.taskmanagementsystem.task_management.Exceptions.CustomNotFoundException;
 import com.taskmanagementsystem.task_management.Models.Tasks;
 import com.taskmanagementsystem.task_management.Repositories.TaskRepository;
 import org.apache.coyote.BadRequestException;
@@ -33,7 +34,7 @@ public class TaskServiceTest {
     private TaskService taskService;
 
     @Test
-    public void addTaskSuccessfully() throws BadRequestException {
+    public void shouldAddTaskSuccessfully() throws BadRequestException {
 
         AddTaskDTO addTaskDTO = AddTaskDTO.builder()
                 .title("Test")
@@ -59,7 +60,21 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void getAllTasksSuccessfully() {
+    public void shouldReturnBadRequestWhenInvalidStatus() throws BadRequestException {
+        AddTaskDTO addTaskDTO = AddTaskDTO.builder()
+                .title("Test 1")
+                .description("This is a test")
+                .dueDate(LocalDate.now().plusDays(1))
+                .status("PENDINGs")
+                .build();
+
+        assertThrows(BadRequestException.class, () -> taskService.addTask(addTaskDTO));
+
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    public void shouldGetAllTasksSuccessfully() {
         List<Tasks> dummyTask = List.of(
                 new Tasks(1L, "DummyTest1", "This is the dummy test 1", Tasks.Status.PENDING, LocalDate.now(), LocalDate.now().plusDays(1)),
                 new Tasks(2L, "DummyTest2", "This is the dummy test 2", Tasks.Status.COMPLETED, LocalDate.now(), LocalDate.now().plusDays(2))
@@ -75,7 +90,7 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void getTaskByIdSuccessfully() {
+    public void shouldGetTaskByIdSuccessfully() {
         Tasks task = new Tasks(1L, "DummyTest1", "This is the dummy test 1", Tasks.Status.PENDING, LocalDate.now(), LocalDate.now().plusDays(1));
 
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
@@ -83,6 +98,17 @@ public class TaskServiceTest {
 
         assertEquals(existingTask.getTitle(), task.getTitle());
         verify(taskRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    public void shouldReturnCustomNotFoundException() {
+        long taskId = 10L;
+        when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
+        assertThrows(CustomNotFoundException.class, () -> taskService.getTaskById(taskId));
+
+        verify(taskRepository, times(1)).findById(taskId);
+
+
     }
 
     @Test
@@ -112,6 +138,20 @@ public class TaskServiceTest {
         assertEquals(Tasks.Status.valueOf(updateTaskDTO.getStatus()), updatedTask.getStatus());
         verify(taskRepository, times(1)).findById(taskId);
         verify(taskRepository, times(1)).save(any(Tasks.class));
+    }
+
+    @Test
+    public void shouldReturnCustomNotFoundExceptionWhileUpdatingNonExistingTask() {
+        long taskId = 10L;
+        UpdateTaskDTO updateTaskDTO = UpdateTaskDTO.builder()
+                .title("Updated Test task")
+                .description("This is updated test task")
+                .dueDate(LocalDate.now().plusDays(2))
+                .status("PENDING")
+                .build();
+        when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
+        assertThrows(CustomNotFoundException.class, ()-> taskService.updateTask(taskId, updateTaskDTO));
+        verify(taskRepository, times(1)).findById(taskId);
     }
 
     @Test

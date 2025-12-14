@@ -2,10 +2,13 @@ package com.taskmanagementsystem.task_management.Services.Implementations;
 
 import com.taskmanagementsystem.task_management.DTOs.AddTaskDTO;
 import com.taskmanagementsystem.task_management.DTOs.UpdateTaskDTO;
+import com.taskmanagementsystem.task_management.Exceptions.CustomNotFoundException;
 import com.taskmanagementsystem.task_management.Models.Tasks;
 import com.taskmanagementsystem.task_management.Repositories.TaskRepository;
 import com.taskmanagementsystem.task_management.Services.ITaskService;
 import org.apache.coyote.BadRequestException;
+import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,13 +56,13 @@ public class TaskService implements ITaskService {
 
     @Override
     public Tasks getTaskById(long taskId) {
-        return taskRepository.findById(taskId).orElseThrow(()-> new RuntimeException("Task id not found"));
+        return taskRepository.findById(taskId).orElseThrow(()-> new CustomNotFoundException());
     }
 
     @Override
     @Transactional
     public Tasks updateTask(long taskId, UpdateTaskDTO updateTaskDTO) throws BadRequestException {
-        Tasks task = taskRepository.findById(taskId).orElseThrow(()-> new RuntimeException("Task id not found"));
+        Tasks task = taskRepository.findById(taskId).orElseThrow(()-> new CustomNotFoundException());
         checkStatus(updateTaskDTO.getStatus());
 
         task.setTitle(updateTaskDTO.getTitle());
@@ -71,7 +74,7 @@ public class TaskService implements ITaskService {
 
     @Override
     public Tasks updateTaskStatus(long taskId, String status) throws BadRequestException {
-        Tasks task = taskRepository.findById(taskId).orElseThrow(()-> new RuntimeException("Task id not found"));
+        Tasks task = taskRepository.findById(taskId).orElseThrow(()-> new CustomNotFoundException());
         checkStatus(status);
         task.setStatus(Enum.valueOf(Tasks.Status.class, status.toUpperCase()));
         return taskRepository.save(task);
@@ -79,14 +82,14 @@ public class TaskService implements ITaskService {
 
     @Override
     public void deleteTask(long taskId) {
-        Tasks task = taskRepository.findById(taskId).orElseThrow(()-> new RuntimeException("Task id not found"));
+        Tasks task = taskRepository.findById(taskId).orElseThrow(()-> new CustomNotFoundException());
         try{
             taskRepository.delete(task);
         }
         catch (Exception e){
             throw new RuntimeException("Task cannot be deleted");
-        }
 
+        }
     }
 
     @Override

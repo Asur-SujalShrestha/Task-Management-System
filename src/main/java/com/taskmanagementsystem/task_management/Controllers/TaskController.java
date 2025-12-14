@@ -2,17 +2,21 @@ package com.taskmanagementsystem.task_management.Controllers;
 
 import com.taskmanagementsystem.task_management.DTOs.AddTaskDTO;
 import com.taskmanagementsystem.task_management.DTOs.UpdateTaskDTO;
+import com.taskmanagementsystem.task_management.Exceptions.CustomNotFoundException;
 import com.taskmanagementsystem.task_management.Models.Tasks;
 import com.taskmanagementsystem.task_management.Services.Implementations.TaskService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -55,6 +59,12 @@ public class TaskController {
 
     @PutMapping("/update-task/{taskId}")
     public ResponseEntity<Tasks> updateTask(@PathVariable long taskId, @RequestBody UpdateTaskDTO updateTaskDTO) throws BadRequestException {
+        if(updateTaskDTO.getTitle().isEmpty()){
+            throw new BadRequestException("Invalid task title.");
+        }
+        if(updateTaskDTO.getDueDate() == null){
+            throw new BadRequestException("Invalid due date.");
+        }
         if(updateTaskDTO.getDueDate().isBefore(LocalDate.now())){
             throw new BadRequestException("Due date cannot be before current date");
         }
@@ -84,15 +94,5 @@ public class TaskController {
     public ResponseEntity<List<Tasks>> getTasksByStatus(@RequestParam(name = "status") String status) throws BadRequestException {
         List<Tasks> tasks= taskService.getTasksByStatus(status);
         return ResponseEntity.ok(tasks);
-    }
-
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<String> handleBadRequestException(BadRequestException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
-        return ResponseEntity.status(500).body(e.getMessage());
     }
 }
